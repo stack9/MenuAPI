@@ -13,7 +13,9 @@
 <b>This plugin is for developers only, if you're a server owner then this isn't intended for you.</b>
 </div>
 
-Bukkit plugin API to create in-game menu programmatically
+MenuAPI facilitates you the creation of menu through inventories. The process is really simple and the API contains some default classes to minimize the code you need to write.
+
+__The wiki isn't ready yet, so if you need to use a specific functionality check out the source code on GitHub.__
 
 ### Usage
 ```java
