@@ -1,0 +1,8 @@
+name: MenuAPI
+version: @version@
+main: it.stack9.menuapi.MenuAPI
+authors: [ stack9 ]
+description: Helps creating menus programmatically
+commands:
+    test:
+        usage: /<command>
