@@ -6,3 +6,7 @@ description: Helps creating menus programmatically
 commands:
     test:
         usage: /<command>
+        permission: menuapi.test
+permissions:
+    menuapi.test:
+        default: op

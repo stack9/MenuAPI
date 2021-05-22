@@ -10,4 +10,5 @@ import org.bukkit.entity.Player;
 public interface IMenu {
     void open(Player player);
     void close(Player player);
+    void update(Player player);
 }

@@ -12,6 +12,8 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.UUID;
+
 /*
  * MenuAPI
  * @author stack
@@ -19,30 +21,31 @@ import org.bukkit.inventory.ItemStack;
  */
 public class Menu implements IMenu {
 
-    private static int NEXT_ID = 0;
     private static final ItemStack BORDER_ITEM = Item.craftColoredGlassPane("GRAY");
-    private static final ItemStack CLOSE_ICON = Item.setNBT(Item.craft(Item.craftColoredGlassPane("RED"), "&cExit"), "mat", Option.CLOSE_MENU_DATA);
-    private static final ItemStack NEXT_PAGE_ICON = Item.setNBT(Item.craft(Material.ARROW, "&7Next page"), "mat", Option.NEXT_PAGE_DATA);
-    private static final ItemStack PREVIOUS_PAGE_ICON = Item.setNBT(Item.craft(Material.ARROW, "&7Previous page"), "mat", Option.PREVIOUS_PAGE_DATA);
+    public static final ItemStack CLOSE_ICON = Item.setNBT(Item.craft(Item.craftColoredGlassPane("RED"), "&cExit"), "mat", Option.CLOSE_MENU_DATA);
+    public static final ItemStack NEXT_PAGE_ICON = Item.setNBT(Item.craft(Material.ARROW, "&7Next page"), "mat", Option.NEXT_PAGE_DATA);
+    public static final ItemStack PREVIOUS_PAGE_ICON = Item.setNBT(Item.craft(Material.ARROW, "&7Previous page"), "mat", Option.PREVIOUS_PAGE_DATA);
 
     public static final int CHEST_SIZE = InventoryType.CHEST.getDefaultSize();
     public static final int DOUBLE_CHEST_SIZE = InventoryType.CHEST.getDefaultSize() * 2;
 
-    private final int id;
+    private final UUID id;
     private String title;
     private final int size;
     private final boolean bordered;
     private final Option[] options;
+    private final MenuListener listener;
     private int page;
+    private boolean open;
 
-    Menu(String title, int size, boolean bordered) {
-        this.id = NEXT_ID++;
+    Menu(String title, int size, boolean bordered, MenuListener listener) {
+        this.id = UUID.randomUUID();
         this.title = title;
         if (!bordered && size > DOUBLE_CHEST_SIZE) {
             Chat.getLogger().severe("=======================================================");
-            Chat.getLogger().severe("Error: You are creating a menu with too much items");
-            Chat.getLogger().severe("       for a double chest and without the borders");
-            Chat.getLogger().severe("       (no control to switch between pages))");
+            Chat.getLogger().severe("  Error: You are creating a menu with too much items");
+            Chat.getLogger().severe("         for a double chest and without the borders");
+            Chat.getLogger().severe("         (no control to switch between pages))");
             Chat.getLogger().severe("=======================================================");
             this.size = DOUBLE_CHEST_SIZE;
         } else {
@@ -50,7 +53,9 @@ public class Menu implements IMenu {
         }
         this.bordered = bordered;
         this.options = new Option[this.size];
+        this.listener = listener;
         this.page = 0;
+        this.open = false;
     }
 
     public Menu setOption(int slot, Option option) {
@@ -69,53 +74,26 @@ public class Menu implements IMenu {
         return setOption(slot, id, Item.craft(item, name, lore));
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public void nextPage(Player player) {
         if (bordered && page < Math.floor((float) size / 28)) {
             page++;
-            close(player);
-            open(player);
+            update(player);
         }
     }
 
     public void previousPage(Player player) {
         if (bordered && page > 0) {
             page--;
+            update(player);
+        }
+    }
+
+    @Override
+    public void update(Player player) {
+        if (open) {
             close(player);
-            open(player);
         }
-    }
-
-    public int getCurrentPage() {
-        return page;
-    }
-
-    public Option getOption(int optionId) {
-        for (Option option : options) {
-            if (option != null && option.getId() == optionId) {
-                return option;
-            }
-        }
-        return null;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public boolean isBordered() {
-        return bordered;
+        open(player);
     }
 
     @Override
@@ -132,11 +110,13 @@ public class Menu implements IMenu {
 
         // Save inventory object into player's metadata
         MetaManipulator.set(player, MetaManipulator.MENU_KEY, this);
+        this.open = true;
         // Open inventory to player
         player.openInventory(inventory);
 
-        // Call menu open event
+        // Dispatch open event
         Bukkit.getPluginManager().callEvent(new MenuOpenEvent(player, this));
+        listener.onOpen(this, player);
     }
 
     private void fill(Inventory inventory) {
@@ -186,8 +166,51 @@ public class Menu implements IMenu {
     public void close(Player player) {
         MetaManipulator.set(player, MetaManipulator.MENU_KEY, null);
         player.closeInventory();
+        this.open = false;
 
-        // Call menu close event
+        // Dispatch close event
         Bukkit.getPluginManager().callEvent(new MenuCloseEvent(player, this));
+        listener.onClose(this, player);
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getCurrentPage() {
+        return page;
+    }
+
+    public Option getOption(int optionId) {
+        for (Option option : options) {
+            if (option != null && option.getId() == optionId) {
+                return option;
+            }
+        }
+        return null;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public boolean isBordered() {
+        return bordered;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    public MenuListener getListener() {
+        return listener;
     }
 }
