@@ -5,6 +5,7 @@ import it.stack9.menuapi.event.MenuItemSelectedEvent;
 import it.stack9.menuapi.utils.Item;
 import it.stack9.menuapi.utils.MetaManipulator;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -48,7 +50,8 @@ public final class MenuAPI extends JavaPlugin implements Listener {
             Menu menu = MenuFactory.create("&8Test menu", Menu.DOUBLE_CHEST_SIZE, new SimpleMenuListener() {
                 @Override
                 public void onSelect(Menu menu, Player player, Option selection) {
-                    player.sendMessage("Github: https://github.com/stack9/MenuAPI");
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            "&6Github: &7https://github.com/stack9/MenuAPI"));
                 }
             });
             menu.setOption(
@@ -120,6 +123,14 @@ public final class MenuAPI extends JavaPlugin implements Listener {
         Menu menu = MetaManipulator.getMenu(event.getPlayer());
         if (menu != null) {
             menu.close((Player) event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        // Clear player's metadata if the player quits with the menu still open (eg. crashes)
+        if (MetaManipulator.getMenu(event.getPlayer()) != null) {
+            MetaManipulator.set(event.getPlayer(), MetaManipulator.MENU_KEY, null);
         }
     }
 }

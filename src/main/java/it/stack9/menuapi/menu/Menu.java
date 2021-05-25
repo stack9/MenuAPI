@@ -42,12 +42,11 @@ public class Menu implements IMenu {
         this.id = UUID.randomUUID();
         this.title = title;
         if (!bordered && size > DOUBLE_CHEST_SIZE) {
-            Chat.getLogger().severe("=======================================================");
-            Chat.getLogger().severe("  Error: You are creating a menu with too much items");
-            Chat.getLogger().severe("         for a double chest and without the borders");
-            Chat.getLogger().severe("         (no control to switch between pages))");
-            Chat.getLogger().severe("=======================================================");
             this.size = DOUBLE_CHEST_SIZE;
+            throw new IllegalArgumentException(
+                    "You are creating a menu with too much items for a double chest " +
+                    "and without the borders (no control to switch between pages)"
+            );
         } else {
             this.size = size;
         }
@@ -75,8 +74,9 @@ public class Menu implements IMenu {
     }
 
     public void nextPage(Player player) {
-        if (bordered && page < Math.floor((float) size / 28)) {
+        if (bordered && page < (getPages() - 1)) {
             page++;
+            listener.onPageForward(this, player, page - 1, page);
             update(player);
         }
     }
@@ -84,6 +84,7 @@ public class Menu implements IMenu {
     public void previousPage(Player player) {
         if (bordered && page > 0) {
             page--;
+            listener.onPageBackward(this, player, page + 1, page);
             update(player);
         }
     }
@@ -91,16 +92,17 @@ public class Menu implements IMenu {
     @Override
     public void update(Player player) {
         if (open) {
-            close(player);
+            close(player, false);
         }
-        open(player);
+        open(player, false);
+        listener.onUpdate(this, player);
     }
 
-    @Override
-    public void open(Player player) {
+    private void open(Player player, boolean callEvent) {
         int invSize = CHEST_SIZE;
-        // If number of options is > than 27 (chest inventory) set inventory as double chest
-        if (size > invSize) {
+        // If number of options is > than 27 (chest inventory) or if menu is bordered
+        // and options are > than 7 set inventory as double chest
+        if (size > invSize || (bordered && size > 7)) {
             invSize *= 2;
         }
         // Create inventory
@@ -114,9 +116,16 @@ public class Menu implements IMenu {
         // Open inventory to player
         player.openInventory(inventory);
 
-        // Dispatch open event
-        Bukkit.getPluginManager().callEvent(new MenuOpenEvent(player, this));
-        listener.onOpen(this, player);
+        if (callEvent) {
+            // Dispatch open event
+            Bukkit.getPluginManager().callEvent(new MenuOpenEvent(player, this));
+            listener.onOpen(this, player);
+        }
+    }
+
+    @Override
+    public void open(Player player) {
+        open(player, true);
     }
 
     private void fill(Inventory inventory) {
@@ -162,15 +171,21 @@ public class Menu implements IMenu {
         }
     }
 
-    @Override
-    public void close(Player player) {
+    private void close(Player player, boolean callEvent) {
         MetaManipulator.set(player, MetaManipulator.MENU_KEY, null);
         player.closeInventory();
         this.open = false;
 
-        // Dispatch close event
-        Bukkit.getPluginManager().callEvent(new MenuCloseEvent(player, this));
-        listener.onClose(this, player);
+        if (callEvent) {
+            // Dispatch close event
+            Bukkit.getPluginManager().callEvent(new MenuCloseEvent(player, this));
+            listener.onClose(this, player);
+        }
+    }
+
+    @Override
+    public void close(Player player) {
+        close(player, true);
     }
 
     public UUID getId() {
@@ -187,6 +202,10 @@ public class Menu implements IMenu {
 
     public int getCurrentPage() {
         return page;
+    }
+
+    public int getPages() {
+        return bordered ? Math.round((float) size / 28) : 0;
     }
 
     public Option getOption(int optionId) {
