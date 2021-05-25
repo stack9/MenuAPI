@@ -17,8 +17,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.annotation.Nullable;
-
 /*
  * MenuAPI
  * @author stack
@@ -49,7 +47,7 @@ public final class MenuAPI extends JavaPlugin implements Listener {
         if (cmd.getName().equalsIgnoreCase("test")) {
             Menu menu = MenuFactory.create("&8Test menu", Menu.DOUBLE_CHEST_SIZE, new SimpleMenuListener() {
                 @Override
-                public void onClick(Menu menu, Player player, @Nullable Option selection) {
+                public void onSelect(Menu menu, Player player, Option selection) {
                     player.sendMessage("Github: https://github.com/stack9/MenuAPI");
                 }
             });
@@ -105,8 +103,9 @@ public final class MenuAPI extends JavaPlugin implements Listener {
                         if (selId >= 0) {
                             Option selected = menu.getOption(selId);
                             // Dispatch selection event
-                            menu.getListener().onClick(menu, player, selected);
+                            menu.getListener().onClick(menu, player, event.getSlot());
                             if (selected != null) {
+                                menu.getListener().onSelect(menu, player, selected);
                                 Bukkit.getPluginManager().callEvent(new MenuItemSelectedEvent(player, menu, selected));
                             }
                         }

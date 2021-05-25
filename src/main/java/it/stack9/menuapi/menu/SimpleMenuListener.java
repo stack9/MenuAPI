@@ -12,5 +12,8 @@ public abstract class SimpleMenuListener implements MenuListener {
     public void onOpen(Menu menu, Player player) { }
 
     @Override
+    public void onClick(Menu menu, Player player, int slot) { }
+
+    @Override
     public void onClose(Menu menu, Player player) { }
 }

@@ -9,5 +9,5 @@ import org.bukkit.entity.Player;
  */
 public class ReadOnlyMenuListener extends SimpleMenuListener {
     @Override
-    public void onClick(Menu menu, Player player, Option option) { }
+    public void onSelect(Menu menu, Player player, Option option) { }
 }
