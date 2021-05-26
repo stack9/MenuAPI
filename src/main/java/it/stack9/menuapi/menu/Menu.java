@@ -73,6 +73,10 @@ public class Menu implements IMenu {
         return setOption(slot, id, Item.craft(item, name, lore));
     }
 
+    public Menu setOption(int slot, IMenuOption option) {
+        return setOption(slot, option.toMenuOption());
+    }
+
     public void nextPage(Player player) {
         if (bordered && page < (getPages() - 1)) {
             page++;

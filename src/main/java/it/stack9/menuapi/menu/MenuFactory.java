@@ -22,14 +22,29 @@ public class MenuFactory {
         return menu;
     }
 
+    public static Menu create(String title, MenuListener listener, List<? extends IMenuOption> items) {
+        Menu menu = new Menu(title, items.size(), false, listener);
+        for (int i = 0; i < items.size(); i++) {
+            menu.setOption(i, items.get(i));
+        }
+        return menu;
+    }
+
     public static Menu createBordered(String title, int size, MenuListener listener) {
         return new Menu(title, size, true, listener);
     }
 
     public static Menu createBordered(String title, List<Option> items, MenuListener listener) {
         Menu menu = new Menu(title, items.size(), true, listener);
-        int i = 0;
-        for (; i < items.size(); i++) {
+        for (int i = 0; i < items.size(); i++) {
+            menu.setOption(i, items.get(i));
+        }
+        return menu;
+    }
+
+    public static Menu createBordered(String title, MenuListener listener, List<? extends IMenuOption> items) {
+        Menu menu = new Menu(title, items.size(), true, listener);
+        for (int i = 0; i < items.size(); i++) {
             menu.setOption(i, items.get(i));
         }
         return menu;
