@@ -5,8 +5,8 @@
 </div>
 
 <div style="text-align:center">
-<img src="https://img.shields.io/badge/version-1.3.0-blue?style=for-the-badge">
-<img src="https://img.shields.io/badge/Minecraft-1.9%20--%201.16.5-blue?style=for-the-badge">
+<img src="https://img.shields.io/badge/version-1.4.0-blue?style=for-the-badge">
+<img src="https://img.shields.io/badge/Minecraft-1.8%20--%201.16.5-blue?style=for-the-badge">
 </div>
 
 <div style="text-align:center">
@@ -30,7 +30,7 @@ __The wiki isn't ready yet, so if you need to use a specific functionality check
     <dependency>
         <groupId>com.github.stack9</groupId>
         <artifactId>MenuAPI</artifactId>
-        <version>v1.3.0</version>
+        <version>v1.4.0</version>
     </dependency>
 </dependencies>
 ```
@@ -43,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.stack9:MenuAPI:v1.3.0'
+    implementation 'com.github.stack9:MenuAPI:v1.4.0'
 }
 ```
 
